@@ -67,5 +67,6 @@ jobs:
             sudo kill -9 `sudo lsof -t -i:3000` || true
             tar -xzf deploy.tar.gz
             cd api
+            npm i
             nohup npm start > nohup.out 2> nohup.err < /dev/null &
             
