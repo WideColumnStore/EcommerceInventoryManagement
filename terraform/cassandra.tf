@@ -44,3 +44,7 @@ resource "aws_instance" "cassandra" {
               sudo service cassandra start
               EOF
 }
+
+resource "aws_eip" "cassandra_eip" {
+  instance = aws_instance.cassandra.id
+}

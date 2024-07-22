@@ -71,3 +71,7 @@ resource "aws_elb" "nodejs_elb" {
     created-using = "terraform"
   }
 }
+
+resource "aws_eip" "nodejs_api_eip" {
+  instance = aws_instance.nodejs_api.id
+}
