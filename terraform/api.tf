@@ -6,8 +6,8 @@ resource "aws_security_group" "nodejs_sg" {
   name_prefix = "nodejs_sg"
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -49,14 +49,14 @@ resource "aws_elb" "nodejs_elb" {
   availability_zones = ["eu-west-1a", "eu-west-1b"]
 
   listener {
-    instance_port     = 80
+    instance_port     = 3000
     instance_protocol = "HTTP"
     lb_port           = 80
     lb_protocol       = "HTTP"
   }
 
   health_check {
-    target              = "HTTP:80/"
+    target              = "HTTP:3000/healthcheck"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
