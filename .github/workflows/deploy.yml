@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "$EC2_KEY" > ec2-key.pem
           chmod 400 ec2-key.pem
-          scp -o StrictHostKeyChecking=no -i ec2-key.pem -r . $EC2_USER@$EC2_HOST:/home/$EC2_USER/app
+          scp -o StrictHostKeyChecking=no -i ec2-key.pem -r ./api/* $EC2_USER@$EC2_HOST:/home/$EC2_USER/app
           ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/$EC2_USER/app
             npm install
