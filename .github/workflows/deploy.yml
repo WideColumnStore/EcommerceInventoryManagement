@@ -63,8 +63,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd app/api
+            cd app
             sudo kill -9 `sudo lsof -t -i:3000` || true
             tar -xzf deploy.tar.gz
+            cd api
             nohup npm start > nohup.out 2> nohup.err < /dev/null &
             
