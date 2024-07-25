@@ -189,5 +189,11 @@ resource "astra_table" "transactions_by_date" {
       Static : false
       TypeDefinition : "uuid"
     }
+
+  {
+      Name : "total_cost"
+      Static : false
+      TypeDefinition : "decimal"
+    }
   ]
 }
