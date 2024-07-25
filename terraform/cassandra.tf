@@ -167,7 +167,7 @@ resource "astra_table" "transactions_by_date" {
   region             = astra_database.inventory_db.regions[0]
   table              = "transactions_by_date"
   partition_keys     = "transaction_date"
-  clustering_columns = "transaction_id:product_name"
+  clustering_columns = "product_name:transaction_id"
   column_definitions = [
     {
       Name : "transaction_date"
