@@ -4,7 +4,7 @@ const getProductSales = async (req, res) => {
   const client = await initializeClient();
 
   try {
-    const query = 'SELECT product_name, COUNT(*) FROM test_keyspace.transactions_by_date WHERE transaction_date = ? GROUP BY product_name';
+    const query = 'SELECT product_name, transaction_id FROM test_keyspace.transactions_by_date WHERE transaction_date = ?';
 
     client.execute(query, [req.params.transaction_date], {prepare: true})
       .then(result => res.status(200).json(result.rows))
