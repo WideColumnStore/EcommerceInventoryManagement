@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const testHandler = require('../handlers/testHandler');
+const verifyToken = require('../middleware/jwtAuth');
 
-router.get('/', testHandler.getProducts);
+router.get('/', verifyToken, testHandler.getProducts);
 
 module.exports = router;

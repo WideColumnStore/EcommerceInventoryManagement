@@ -10,5 +10,7 @@ module.exports = {
   bucketName: process.env.BUCKET_NAME,
   certKey: process.env.CERT_KEY,
   astraAPIToken: process.env.ASTRA_API_TOKEN,
-  bundleKey: process.env.BUNDLE_KEY
+  bundleKey: process.env.BUNDLE_KEY,
+  cognitoId: process.env.COGNITO_ID,
+  cognitoClientId: process.env.COGNITO_CLIENT_ID
 };

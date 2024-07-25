@@ -78,6 +78,8 @@ jobs:
             export AWS_SECRET_ACCESS_KEY=${{ secrets.NODE_AWS_SECRET_ACCESS_KEY }}
             export ASTRA_API_TOKEN=${{ secrets.ASTRA_API_TOKEN }}
             export BUNDLE_KEY=${{ secrets.BUNDLE_KEY }}
+            export COGNITO_ID=${{ secrets.COGNITO_ID }}
+            export COGNITO_CLIENT_ID=${{ secrets.COGNITO_CLIENT_ID }}
             npm i
             nohup npm start > nohup.out 2> nohup.err < /dev/null &
             
