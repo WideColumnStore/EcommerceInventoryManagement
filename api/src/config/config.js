@@ -8,5 +8,7 @@ module.exports = {
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   bucketName: process.env.BUCKET_NAME,
-  certKey: process.env.CERT_KEY
+  certKey: process.env.CERT_KEY,
+  astraAPIToken: process.env.ASTRA_API_TOKEN,
+  bundleKey: process.env.BUNDLE_KEY
 };
