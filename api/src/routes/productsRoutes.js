@@ -6,11 +6,9 @@ const productsHandler = require('../handlers/productsHandler');
 router.get('/all-products', productsHandler.getProducts);
 router.get('/products-in-category', productsHandler.countProductsInCategories);
 router.get('/products-in-warehouse', productsHandler.countProductsInWarehouse);
-router.get('/transactions-by-date', productsHandler.getTransactionsByDate);
 router.get('/products-by-quantity', productsHandler.getProductsByQuantity);
 
 //insert
 router.post('/add-product', productsHandler.insertProduct);
-router.post('/add-new-transaction', productsHandler.addNewTransaction);
 router.post('/update-stock-quantity', productsHandler.updateStockQuantity);
 module.exports = router;
