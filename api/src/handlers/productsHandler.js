@@ -77,42 +77,48 @@ const getProductsByQuantity = async (req, res) => {
 const insertProduct = async (req, res) => {
     const client = await createClient();
 
-    const { product_category, product_name, cost_price, quantity_in_stock, warehouse_location, warehouse_name } = req.body;
-    const product_id = uuidv4();
-    const delivery_date = new Date();
-    const warehouse_id = uuidv4();
+    try{
+        const array = req.body;
+        for(product of array) {
+            const { product_category, product_name, cost_price, quantity_in_stock, warehouse_location, warehouse_name } = product;
+            const product_id = uuidv4();
+            const delivery_date = new Date();
+            const warehouse_id = uuidv4();
 
-    const insertProductQuery = `
-    INSERT INTO products (product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-    const insertProductByCategoryQuery = `
-    INSERT INTO products_by_category (product_category, product_name, product_id)
-    VALUES (?, ?, ?)
-  `;
-    const insertProductByWarehouseQuery = `
-    INSERT INTO products_by_warehouse ( warehouse_name, warehouse_id, product_name, warehouse_location, product_id)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-    const insertStocksByQuantityQuery = `
-    INSERT INTO stocks_by_quantity (product_category, product_name, product_id, quantity_in_stock)
-    VALUES (?, ?, ?, ?)
-  `;
+            const insertProductQuery = `
+            INSERT INTO products (product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const insertProductByCategoryQuery = `
+            INSERT INTO products_by_category (product_category, product_name, product_id)
+            VALUES (?, ?, ?)
+            `;
+            const insertProductByWarehouseQuery = `
+            INSERT INTO products_by_warehouse ( warehouse_name, warehouse_id, product_name, warehouse_location, product_id)
+            VALUES (?, ?, ?, ?, ?)
+            `;
+            const insertStocksByQuantityQuery = `
+            INSERT INTO stocks_by_quantity (product_category, product_name, product_id, quantity_in_stock)
+            VALUES (?, ?, ?, ?)
+            `;
 
-    const queries = [
-        { query: insertProductQuery, params: [product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date] },
-        { query: insertProductByCategoryQuery, params: [product_category, product_name, product_id] },
-        { query: insertProductByWarehouseQuery, params: [warehouse_name, warehouse_id, product_name, warehouse_location, product_id] },
-        { query: insertStocksByQuantityQuery, params: [product_category, product_name, product_id, quantity_in_stock] },
-    ];
+            const queries = [
+                { query: insertProductQuery, params: [product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date] },
+                { query: insertProductByCategoryQuery, params: [product_category, product_name, product_id] },
+                { query: insertProductByWarehouseQuery, params: [warehouse_name, warehouse_id, product_name, warehouse_location, product_id] },
+                { query: insertStocksByQuantityQuery, params: [product_category, product_name, product_id, quantity_in_stock] },
+            ];
 
-    try {
-        await client.batch(queries, { prepare: true });
+            await client.batch(queries, { prepare: true });
+        }
+        
         res.status(201).send('Product created successfully');
-    } catch (error) {
-        console.error(`Error in insertProduct: ${error}`);
+    }
+    catch (error) {
+        console.log("Insertion error");
         res.status(500).send('Internal Server Error');
-    } finally {
+    }
+    finally {
         await client.shutdown();
     }
 };
