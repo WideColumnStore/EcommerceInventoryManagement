@@ -1,12 +1,12 @@
-const { initializeClient } = require('../config/cassandraClient');
+const { createClient } = require('../config/cassandraClient');
 const { v4: uuidv4 } = require('uuid');
 
 //return all products
 const getProducts = async (req, res) => {
-    const client = await initializeClient();
+    const client = await createClient();
 
     try {
-        const query = 'SELECT * FROM test_keyspace.products'; //update keyspace
+        const query = 'SELECT * FROM products';
 
         client.execute(query)
             .then(result => res.status(200).json(result.rows))
@@ -19,12 +19,12 @@ const getProducts = async (req, res) => {
     }
 };
 
-//return all products partitioned by category
-const getProductsByCategory = async (req, res) => {
-    const client = await initializeClient();
+// Return count of products in each category
+const countProductsInCategories = async (req, res) => {
+    const client = await createClient();
 
     try {
-        const query = 'SELECT * FROM test_keyspace.products_by_category'; //update keyspace
+        const query = 'SELECT product_category, COUNT(*) FROM products_by_category GROUP BY product_category';
 
         client.execute(query)
             .then(result => res.status(200).json(result.rows))
@@ -37,12 +37,12 @@ const getProductsByCategory = async (req, res) => {
     }
 };
 
-//return all products partitioned by warehouse
-const getProductsByWarehouse = async (req, res) => {
-    const client = await initializeClient();
+// Return count of products in warehouse
+const countProductsInWarehouse = async (req, res) => {
+    const client = await createClient();
 
     try {
-        const query = 'SELECT * FROM test_keyspace.products_by_warehouse'; //update keyspace
+        const query = 'SELECT warehouse_name, COUNT(*) FROM products_by_warehouse GROUP BY warehouse_name';
 
         client.execute(query)
             .then(result => res.status(200).json(result.rows))
@@ -55,30 +55,12 @@ const getProductsByWarehouse = async (req, res) => {
     }
 };
 
-//return all transactions partitioned by date
-const getTransactionsByDate = async (req, res) => {
-    const client = await initializeClient();
-
-    try {
-        const query = 'SELECT * FROM test_keyspace.transactions_by_date'; //update keyspace
-
-        client.execute(query)
-            .then(result => res.status(200).json(result.rows))
-            .catch(e => console.log(`${e}`));
-    } catch (error) {
-        console.error(`Error in getTransactionsByDate: ${error}`);
-        res.status(500).send('Internal Server Error');
-    } finally {
-        await client.shutdown();
-    }
-};
-
-//return all stocks partitioned by product name
+// Return all stocks partitioned by product name
 const getProductsByQuantity = async (req, res) => {
-    const client = await initializeClient();
+    const client = await createClient();
 
     try {
-        const query = 'SELECT * FROM test_keyspace.stocks_by_quantity'; //update keyspace
+        const query = 'SELECT product_category, SUM(quantity_in_stock) AS Quantity_In_Stock FROM stocks_by_quantity GROUP BY product_category';
 
         client.execute(query)
             .then(result => res.status(200).json(result.rows))
@@ -91,9 +73,27 @@ const getProductsByQuantity = async (req, res) => {
     }
 };
 
+//return all transactions partitioned by date
+const getTransactionsByDate = async (req, res) => {
+    const client = await createClient();
+
+    try {
+        const query = 'SELECT product_name, transaction_date, COUNT(*) FROM transactions_by_date GROUP BY transaction_date, product_name';
+
+        client.execute(query)
+            .then(result => res.status(200).json(result.rows))
+            .catch(e => console.log(`${e}`));
+    } catch (error) {
+        console.error(`Error in getTransactionsByDate: ${error}`);
+        res.status(500).send('Internal Server Error');
+    } finally {
+        await client.shutdown();
+    }
+};
+
 //add new product
 const insertProduct = async (req, res) => {
-    const client = await initializeClient();
+    const client = await createClient();
 
     const { product_category, product_name, cost_price, quantity_in_stock, warehouse_location, warehouse_name } = req.body;
     const product_id = uuidv4();
@@ -101,19 +101,19 @@ const insertProduct = async (req, res) => {
     const warehouse_id = uuidv4();
 
     const insertProductQuery = `
-    INSERT INTO test_keyspace.products (product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date)
+    INSERT INTO products (product_id, product_category, product_name, cost_price, quantity_in_stock, warehouse_id, warehouse_location, delivery_date)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
     const insertProductByCategoryQuery = `
-    INSERT INTO test_keyspace.products_by_category (product_category, product_name, product_id)
+    INSERT INTO products_by_category (product_category, product_name, product_id)
     VALUES (?, ?, ?)
   `;
     const insertProductByWarehouseQuery = `
-    INSERT INTO test_keyspace.products_by_warehouse ( warehouse_name, warehouse_id, product_name, warehouse_location, product_id)
+    INSERT INTO products_by_warehouse ( warehouse_name, warehouse_id, product_name, warehouse_location, product_id)
     VALUES (?, ?, ?, ?, ?)
   `;
     const insertStocksByQuantityQuery = `
-    INSERT INTO test_keyspace.stocks_by_quantity (product_category, product_name, product_id, quantity_in_stock)
+    INSERT INTO stocks_by_quantity (product_category, product_name, product_id, quantity_in_stock)
     VALUES (?, ?, ?, ?)
   `;
 
@@ -125,7 +125,7 @@ const insertProduct = async (req, res) => {
     ];
 
     try {
-        await client.batch(queries, { prepare: true, consistency: cassandra.types.consistencies.localQuorum });
+        await client.batch(queries, { prepare: true });
         res.status(201).send('Product created successfully');
     } catch (error) {
         console.error(`Error in insertProduct: ${error}`);
@@ -137,10 +137,10 @@ const insertProduct = async (req, res) => {
 
 //add new transaction when product is sold
 const addNewTransaction = async (req, res) => {
-    const client = await initializeClient();
+    const client = await createClient();
 
     try {
-        const query = 'INSERT INTO test_keyspace.transactions_by_date (transaction_date, transaction_id, product_name, product_id) VALUES (?, ?, ?, ?)'; //update keyspace
+        const query = 'INSERT INTO transactions_by_date (transaction_date, transaction_id, product_name, product_id) VALUES (?, ?, ?, ?)';
 
         client.execute(query, [transaction_date, transaction_id, product_name, product_id])
             .then(result => res.status(200).json(result.rows))
@@ -155,17 +155,17 @@ const addNewTransaction = async (req, res) => {
 
 //update stock quantity
 const updateStockQuantity = async (req, res) => {
-    const client = await initializeClient();
+    const client = await createClient();
     const { product_id, new_quantity, product_name, product_category } = req.body;
 
     const updateProductsQuery = `
-        UPDATE test_keyspace.products
+        UPDATE products
         SET quantity_in_stock = ?
         WHERE product_id = ? AND product_category = ? AND product_name = ?;
     `;
 
     const updateStocksByQuantityQuery = `
-        UPDATE test_keyspace.stocks_by_quantity
+        UPDATE stocks_by_quantity
         SET quantity_in_stock = ?
         WHERE product_category = ? AND product_name = ?;
     `;
@@ -186,8 +186,8 @@ const updateStockQuantity = async (req, res) => {
 
 module.exports = {
     getProducts,
-    getProductsByCategory,
-    getProductsByWarehouse,
+    countProductsInCategories,
+    countProductsInWarehouse,
     getTransactionsByDate,
     getProductsByQuantity,
     insertProduct,

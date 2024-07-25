@@ -4,8 +4,8 @@ const productsHandler = require('../handlers/productsHandler');
 
 //get
 router.get('/all-products', productsHandler.getProducts);
-router.get('/products-by-category', productsHandler.getProductsByCategory);
-router.get('/products-by-warehouse', productsHandler.getProductsByWarehouse);
+router.get('/products-in-category', productsHandler.countProductsInCategories);
+router.get('/products-in-warehouse', productsHandler.countProductsInWarehouse);
 router.get('/transactions-by-date', productsHandler.getTransactionsByDate);
 router.get('/products-by-quantity', productsHandler.getProductsByQuantity);
 

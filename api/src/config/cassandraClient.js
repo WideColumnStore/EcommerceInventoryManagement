@@ -1,47 +1,43 @@
 const cassandra = require('cassandra-driver');
-const { keyspaceUsername, keyspacePassword, bucketName, certKey } = require('./config');
-const AWS = require('./awsConfig');
+const AWS = require('aws-sdk');
+const fs = require('fs');
+const path = require('path');
+const { bucketName, bundleKey, astraAPIToken } = require('./config');
 
 const s3 = new AWS.S3();
-
-const auth = new cassandra.auth.PlainTextAuthProvider(keyspaceUsername, keyspacePassword);
-
+const localSecureBundlePath = path.join(__dirname, 'bundle.zip');
 let client;
 
-const getCertificate = async () => {
-  try {
+async function downloadSecureBundle() {
     const params = {
-      Bucket: bucketName,
-      Key: certKey,
+        Bucket: bucketName,
+        Key: bundleKey
     };
 
-    const data = await s3.getObject(params).promise();
-    return data.Body.toString('utf-8');
-  } catch (error) {
-    console.error(`Error fetching certificate from S3: ${error}`);
-    throw error;
-  }
-};
+    return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(localSecureBundlePath);
+        s3.getObject(params)
+            .createReadStream()
+            .pipe(file)
+            .on('close', () => resolve(localSecureBundlePath))
+            .on('error', reject);
+    });
+}
 
-const initializeClient = async () => {
-  const certificate = await getCertificate();
-  const sslOptions1 = {
-    ca: [certificate],
-    host: 'cassandra.eu-west-1.amazonaws.com',
-    rejectUnauthorized: true,
-  };
+async function createClient() {
+    try {
+      const secureBundlePath = await downloadSecureBundle();
 
-  client = new cassandra.Client({
-    contactPoints: ['cassandra.eu-west-1.amazonaws.com'],
-    localDataCenter: 'eu-west-1',
-    authProvider: auth,
-    sslOptions: sslOptions1,
-    protocolOptions: { port: 9142 },
-  });
+      const cloud = { secureConnectBundle: secureBundlePath };
+      const authProvider = new cassandra.auth.PlainTextAuthProvider('token', astraAPIToken);
+      client = new cassandra.Client({ cloud, authProvider, keyspace: 'inventory_keyspace' });
+      return client;
 
-  return client;
-};
+    } catch (error) {
+      console.error('Error downloading secure bundle or connecting to Cassandra:', error);
+    }
+}
 
 module.exports = {
-  initializeClient,
+  createClient,
 };

@@ -1,10 +1,12 @@
-const { initializeClient } = require('../config/cassandraClient');
+const { createClient } = require('../config/cassandraClient');
 
 const getProducts = async (req, res) => {
-  const client = await initializeClient();
+  let client;
 
   try {
-    const query = 'SELECT * FROM test_keyspace.test_table';
+    client = await createClient();
+
+    const query = 'SELECT * FROM products';
 
     client.execute(query)
       .then(result => res.status(200).json(result.rows))
