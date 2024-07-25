@@ -73,24 +73,6 @@ const getProductsByQuantity = async (req, res) => {
     }
 };
 
-//return all transactions partitioned by date
-const getTransactionsByDate = async (req, res) => {
-    const client = await createClient();
-
-    try {
-        const query = 'SELECT product_name, transaction_date, COUNT(*) FROM transactions_by_date GROUP BY transaction_date, product_name';
-
-        client.execute(query)
-            .then(result => res.status(200).json(result.rows))
-            .catch(e => console.log(`${e}`));
-    } catch (error) {
-        console.error(`Error in getTransactionsByDate: ${error}`);
-        res.status(500).send('Internal Server Error');
-    } finally {
-        await client.shutdown();
-    }
-};
-
 //add new product
 const insertProduct = async (req, res) => {
     const client = await createClient();
@@ -135,24 +117,6 @@ const insertProduct = async (req, res) => {
     }
 };
 
-//add new transaction when product is sold
-const addNewTransaction = async (req, res) => {
-    const client = await createClient();
-
-    try {
-        const query = 'INSERT INTO transactions_by_date (transaction_date, transaction_id, product_name, product_id) VALUES (?, ?, ?, ?)';
-
-        client.execute(query, [transaction_date, transaction_id, product_name, product_id])
-            .then(result => res.status(200).json(result.rows))
-            .catch(e => console.log(`${e}`));
-    } catch (error) {
-        console.error(`Error in addNewTransaction: ${error}`);
-        res.status(500).send('Internal Server Error');
-    } finally {
-        await client.shutdown();
-    }
-};
-
 //update stock quantity
 const updateStockQuantity = async (req, res) => {
     const client = await createClient();
@@ -188,9 +152,7 @@ module.exports = {
     getProducts,
     countProductsInCategories,
     countProductsInWarehouse,
-    getTransactionsByDate,
     getProductsByQuantity,
     insertProduct,
-    addNewTransaction,
     updateStockQuantity,
 };
