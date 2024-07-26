@@ -128,6 +128,8 @@ const updateStockQuantity = async (req, res) => {
     const client = await createClient();
     const { product_id, new_quantity, product_name, product_category } = req.body;
 
+    console.log(new_quantity);
+
     const updateProductsQuery = `
         UPDATE products
         SET quantity_in_stock = ?
@@ -141,8 +143,8 @@ const updateStockQuantity = async (req, res) => {
     `;
 
     try {
-        await client.execute(updateProductsQuery, [new_quantity, product_id, product_category, product_name]);
-        await client.execute(updateStocksByQuantityQuery, [new_quantity, product_category, product_name]);
+        await client.execute(updateProductsQuery, [parseInt(new_quantity), product_id, product_category, product_name], { prepare: true });
+        await client.execute(updateStocksByQuantityQuery, [parseInt(new_quantity), product_category, product_name], { prepare: true });
 
         res.status(200).send('Stock quantity updated successfully');
 
